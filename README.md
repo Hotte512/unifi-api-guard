@@ -172,6 +172,18 @@ go run ./cmd/unifi-api-guard
 
 (mit `GUARD_DATA_DIR=./data`). Beispiele in Doku und Tests nur mit `example.com` und `192.168.1.x`.
 
+## Haftungsausschluss und Hinweise
+
+- **Keine Haftung, keine Gewähr.** Privates Hobby-Projekt, Nutzung auf eigenes Risiko. Der Guard verkleinert das
+  Risiko eines UniFi-API-Keys, ersetzt aber keine eigene Prüfung der Regeln und keine Sicherung der
+  Gateway-Konfiguration.
+- **Mit KI-Unterstützung entwickelt.** Code und Doku entstehen mit Hilfe von KI (Claude), werden geprüft und
+  getestet (Unit- und Ende-zu-Ende-Tests, `govulncheck`), können aber trotzdem Fehler enthalten.
+- Nicht mit Ubiquiti verbunden. „UniFi“ ist eine Marke von Ubiquiti Inc.
+
+> **English:** No warranty, no liability – use at your own risk. Developed with AI assistance (Claude); reviewed
+> and tested, but mistakes are possible. Not affiliated with Ubiquiti.
+
 ## Lizenz
 
 MIT, siehe [LICENSE](LICENSE).

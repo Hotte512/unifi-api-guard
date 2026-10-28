@@ -19,6 +19,7 @@ Kategorien: Neu / Geändert / Behoben / Sicherheit.
 
 ### Geändert
 
+- README: Haftungsausschluss und Hinweis auf die Entwicklung mit KI-Unterstützung.
 - Das Einrichtungs-Token steht zusätzlich in der Datei `setup-token` im Datenverzeichnis und wird nach der
   Einrichtung gelöscht – es geht also nicht mehr verloren, wenn das Container-Log weg ist.
 - CI prüft mit dem neuesten Go-1.26-Patch-Release und nutzt neuere GitHub-Actions-Versionen.
