@@ -69,14 +69,21 @@ Installer, der genau dieses Setup automatisch einrichtet: `install/install.sh` (
 
 ## 2. Erster Start
 
-1. Einrichtungs-Token aus dem Log holen:
+1. Einrichtungs-Token holen – es steht in der Datei `setup-token` im Datenverzeichnis und im Log:
 
    ```bash
-   docker logs unifi-api-guard
+   cat /opt/unifi-api-guard/setup-token
    ```
 
+   ```bash
+   docker logs unifi-api-guard 2>&1 | grep setup_token
+   ```
+
+   Gibt es beides nicht, läuft der Guard nicht richtig (siehe Fehlersuche, meist falscher Besitzer des
+   Datenverzeichnisses).
+
 2. Admin-Oberfläche öffnen, unter „Einrichtung“ das Token eingeben und ein Admin-Passwort (mind. 12 Zeichen)
-   festlegen. Danach ist das Token wertlos.
+   festlegen. Danach ist das Token wertlos, die Datei `setup-token` wird gelöscht.
 
 ## 3. Gateway eintragen
 
@@ -155,6 +162,8 @@ Zuerst in der Übersicht unter „Letzte Anfragen“ nachsehen: dort stehen Key,
 
 | Meldung | Ursache | Lösung |
 | --- | --- | --- |
+| Kein Einrichtungs-Token, Container startet immer wieder neu, im Log `permission denied` | Datenverzeichnis gehört nicht UID 65532 | `chown 65532:65532 /opt/unifi-api-guard && docker restart unifi-api-guard`, dann `cat /opt/unifi-api-guard/setup-token` |
+| Kein Einrichtungs-Token, Admin-Oberfläche zeigt die Anmeldung | Es gibt schon ein Admin-Passwort | Mit dem Passwort anmelden oder „Admin-Passwort vergessen“ |
 | `401` `invalid api key` | Key falsch, gelöscht oder Leerzeichen kopiert | Key prüfen, sonst neuen anlegen |
 | `403` `ip address not allowed for this api key` | Quell-IP steht nicht in den erlaubten IPs | Echte IP unter „Letzte Anfragen“ ablesen und eintragen, bei Docker-Bridge z. B. `172.17.0.1` |
 | `403` `not allowed for this api key` | Keine Regel erlaubt Methode und Pfad | Regel ergänzen (Abschnitt 6) |
@@ -169,7 +178,7 @@ Zuerst in der Übersicht unter „Letzte Anfragen“ nachsehen: dort stehen Key,
 2. In `/data/config.json` (im Beispiel `/opt/unifi-api-guard/config.json`) den Wert bei `"admin_password"` leeren, also
    `"admin_password": ""`.
 3. Container starten: `docker start unifi-api-guard`
-4. Im Log steht ein neues Einrichtungs-Token (`docker logs unifi-api-guard`), damit ein neues Passwort setzen.
+4. Neues Einrichtungs-Token aus `/opt/unifi-api-guard/setup-token` (oder dem Log) holen und damit ein neues Passwort setzen.
 
 ## 8. Update und Backup
 

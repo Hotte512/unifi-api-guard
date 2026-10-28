@@ -1,7 +1,9 @@
 {{define "content"}}
 <section class="narrow">
 	<h1>Einrichtung</h1>
-	<p>Das Einrichtungs-Token steht beim ersten Start im Container-Log (<code>docker logs unifi-api-guard</code>).</p>
+	<p>Das Einrichtungs-Token steht in der Datei <code>setup-token</code> im Datenverzeichnis
+	(z. B. <code>cat /opt/unifi-api-guard/setup-token</code>) und beim Start im Container-Log
+	(<code>docker logs unifi-api-guard</code>). Es wird nach der Einrichtung gelöscht.</p>
 	<form method="post" action="/setup">
 		<label>Einrichtungs-Token <input name="token" required autocomplete="off"></label>
 		<label>Admin-Passwort (mind. 12 Zeichen) <input type="password" name="password" minlength="12" autocomplete="new-password" required></label>

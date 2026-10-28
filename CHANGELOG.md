@@ -19,4 +19,11 @@ Kategorien: Neu / Geändert / Behoben / Sicherheit.
 
 ### Geändert
 
+- Das Einrichtungs-Token steht zusätzlich in der Datei `setup-token` im Datenverzeichnis und wird nach der
+  Einrichtung gelöscht – es geht also nicht mehr verloren, wenn das Container-Log weg ist.
 - CI prüft mit dem neuesten Go-1.26-Patch-Release und nutzt neuere GitHub-Actions-Versionen.
+
+### Behoben
+
+- Ist das Datenverzeichnis nicht beschreibbar (falscher Besitzer), nennt die Fehlermeldung jetzt den nötigen
+  `chown`-Befehl statt nur „permission denied“.

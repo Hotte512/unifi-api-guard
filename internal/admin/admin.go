@@ -16,6 +16,7 @@ import (
 	"net/http"
 	"net/netip"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -46,7 +47,9 @@ type Server struct {
 	SecureCookie   bool
 	// SetupToken allows to set the first password, empty once a password exists
 	SetupToken string
-	Log        *slog.Logger
+	// TokenFile holds the setup token as well and is removed after the setup
+	TokenFile string
+	Log       *slog.Logger
 
 	pages map[string]*template.Template
 	mux   *http.ServeMux
@@ -273,7 +276,7 @@ func (s *Server) setup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if subtle.ConstantTimeCompare([]byte(strings.TrimSpace(r.PostFormValue("token"))), []byte(s.SetupToken)) != 1 {
-		s.render(w, r, "setup", map[string]any{"Error": "Einrichtungs-Token stimmt nicht (siehe Container-Log)."})
+		s.render(w, r, "setup", map[string]any{"Error": "Einrichtungs-Token stimmt nicht (Datei setup-token im Datenverzeichnis oder Container-Log)."})
 		return
 	}
 	if r.PostFormValue("password") != r.PostFormValue("password2") {
@@ -285,6 +288,9 @@ func (s *Server) setup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	s.SetupToken = ""
+	if s.TokenFile != "" {
+		os.Remove(s.TokenFile)
+	}
 	s.newSession(w)
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }

@@ -60,7 +60,8 @@ docker compose up -d
 docker logs unifi-api-guard
 ```
 
-Beim ersten Start steht im Log ein **Einrichtungs-Token**. Admin-Oberfläche öffnen (`http://127.0.0.1:8081`), Token
+Beim ersten Start legt der Guard ein **Einrichtungs-Token** an: in der Datei `setup-token` im Datenverzeichnis
+(`cat data/setup-token`) und im Log. Admin-Oberfläche öffnen (`http://127.0.0.1:8081`), Token
 eingeben und ein Admin-Passwort festlegen. Das Token ist danach wertlos.
 
 Das Datenverzeichnis muss für den Container-Benutzer (UID 65532) beschreibbar sein:

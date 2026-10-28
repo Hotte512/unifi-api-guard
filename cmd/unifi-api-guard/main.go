@@ -7,6 +7,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io/fs"
 	"log/slog"
 	"net/http"
 	"net/netip"
@@ -77,6 +78,10 @@ func healthcheck() int {
 func run(log *slog.Logger) error {
 	dataDir := env("GUARD_DATA_DIR", "/data")
 	secret, err := store.LoadSecret(env("GUARD_SECRET_FILE", filepath.Join(dataDir, "secret.key")))
+	if errors.Is(err, fs.ErrPermission) {
+		return fmt.Errorf("%w: the data directory must belong to uid 65532, on the host run: "+
+			"chown 65532:65532 <host directory of %s>", err, dataDir)
+	}
 	if err != nil {
 		return err
 	}
@@ -103,10 +108,18 @@ func run(log *slog.Logger) error {
 	certFile, keyFile := os.Getenv("GUARD_TLS_CERT"), os.Getenv("GUARD_TLS_KEY")
 	as := &admin.Server{Store: st, Proxy: ph, Audit: audit, Allowed: adminAllow, TrustedProxies: trusted,
 		SecureCookie: certFile != "" || env("GUARD_COOKIE_SECURE", "") == "true", Log: log.With("part", "admin")}
-	if !st.HasPassword() {
+	// the token only allows to set the first password and is useless afterwards; it is also kept in a file, so it
+	// can still be found when the log is gone
+	as.TokenFile = filepath.Join(dataDir, "setup-token")
+	if st.HasPassword() {
+		os.Remove(as.TokenFile)
+	} else {
 		as.SetupToken = store.RandomPassword()
-		// the token only allows to set the first password and is useless afterwards
-		log.Warn("no admin password yet, open the admin ui and enter this setup token", "setup_token", as.SetupToken)
+		if err := os.WriteFile(as.TokenFile, []byte(as.SetupToken+"\n"), 0o600); err != nil {
+			return err
+		}
+		log.Warn("no admin password yet, open the admin ui and enter this setup token (also in "+as.TokenFile+")",
+			"setup_token", as.SetupToken)
 	}
 	if err := as.Init(); err != nil {
 		return err
