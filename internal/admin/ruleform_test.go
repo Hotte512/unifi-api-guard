@@ -135,8 +135,7 @@ func TestParseRuleForm(t *testing.T) {
 		"rule.1.endpoint": {""}, "rule.1.path": {""}, "rule.1.patterns": {"\r\n"},
 		// removed card, even though it is invalid
 		"rule.2.endpoint": {"custom"}, "rule.2.path": {"/bad"}, "rule.2.methods": {"GET"}, "rule.2.delete": {"on"},
-		// path typed without choosing "Eigener Pfad"
-		"rule.3.endpoint": {""}, "rule.3.path": {"info"}, "rule.3.methods": {"GET"},
+		"rule.3.endpoint": {"custom"}, "rule.3.path": {"info"}, "rule.3.methods": {"GET"},
 		// custom chosen but nothing else: ignored
 		"rule.4.endpoint": {"custom"},
 		"rule.5.endpoint": {"custom"}, "rule.5.path": {"sites/*/devices/**"}, "rule.5.methods": {"DELETE", "GET", "PATCH"},
@@ -158,6 +157,16 @@ func TestParseRuleForm(t *testing.T) {
 	}
 	if !reflect.DeepEqual(rs, want) {
 		t.Errorf("rules = %+v, want %+v", rs, want)
+	}
+
+	// the path input only counts with "Eigener Pfad" (it is hidden otherwise), unknown endpoints are rejected
+	for _, f := range []url.Values{
+		{"rule_count": {"1"}, "rule.0.endpoint": {""}, "rule.0.path": {"info"}, "rule.0.methods": {"GET"}},
+		{"rule_count": {"1"}, "rule.0.endpoint": {"**"}, "rule.0.methods": {"GET"}},
+	} {
+		if _, rs, err := parseRuleForm(f); err == nil {
+			t.Errorf("%v: accepted %+v", f, rs)
+		}
 	}
 
 	// an empty form is an empty rule set, not nil

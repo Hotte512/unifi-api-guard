@@ -49,11 +49,11 @@ var Catalog = []Endpoint{
 	{Group: "Firewall", Name: "Firewall-Zonen (Liste / anlegen)", Path: "sites/*/firewall/zones", Methods: []string{"GET", "POST"}, FilterFields: []string{"name"}},
 	{Group: "Firewall", Name: "Firewall-Zone (einzeln)", Path: "sites/*/firewall/zones/*", Methods: []string{"GET", "PUT", "DELETE"}, FilterFields: []string{"name"}},
 	{Group: "Firewall", Name: "Firewall-Policies (Liste / anlegen)", Path: "sites/*/firewall/policies", Methods: []string{"GET", "POST"}, FilterFields: []string{"name"}},
-	{Group: "Firewall", Name: "Firewall-Policy (einzeln)", Path: "sites/*/firewall/policies/*", Methods: []string{"GET", "PUT", "PATCH", "DELETE"}, FilterFields: []string{"name"}},
+	{Group: "Firewall", Name: "Firewall-Policy (einzeln, ohne Filter auch Reihenfolge)", Path: "sites/*/firewall/policies/*", Methods: []string{"GET", "PUT", "PATCH", "DELETE"}, FilterFields: []string{"name"}},
 	{Group: "Firewall", Name: "Firewall-Policies: Reihenfolge", Path: "sites/*/firewall/policies/ordering", Methods: []string{"GET", "PUT"}},
 	// ACL
 	{Group: "ACL", Name: "ACL-Regeln (Liste / anlegen)", Path: "sites/*/acl-rules", Methods: []string{"GET", "POST"}, FilterFields: []string{"name"}},
-	{Group: "ACL", Name: "ACL-Regel (einzeln)", Path: "sites/*/acl-rules/*", Methods: []string{"GET", "PUT", "DELETE"}, FilterFields: []string{"name"}},
+	{Group: "ACL", Name: "ACL-Regel (einzeln, ohne Filter auch Reihenfolge)", Path: "sites/*/acl-rules/*", Methods: []string{"GET", "PUT", "DELETE"}, FilterFields: []string{"name"}},
 	{Group: "ACL", Name: "ACL-Regeln: Reihenfolge", Path: "sites/*/acl-rules/ordering", Methods: []string{"GET", "PUT"}},
 	// Traffic-Listen
 	{Group: "Traffic-Listen", Name: "Traffic-Listen (Liste / anlegen)", Path: "sites/*/traffic-matching-lists", Methods: []string{"GET", "POST"}, FilterFields: []string{"name"}},

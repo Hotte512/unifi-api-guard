@@ -110,9 +110,17 @@ func lines(v string) []string {
 
 // rule converts a card, empty reports a card without any input, which is skipped.
 func (c ruleCard) rule() (r rules.Rule, empty bool, err error) {
-	path := c.Endpoint
-	if path == "" || path == customEndpoint {
+	// the path input only counts for "Eigener Pfad", other endpoints must be catalog entries
+	var path string
+	switch {
+	case c.Endpoint == customEndpoint:
 		path = c.Path
+	case c.Endpoint != "":
+		e, ok := rules.EndpointByPath(c.Endpoint)
+		if !ok {
+			return r, false, errors.New("unbekannter Endpunkt.")
+		}
+		path = e.Path
 	}
 	patterns := lines(c.Patterns)
 	hasFilter := c.FilterField != "" || len(patterns) > 0
@@ -120,7 +128,7 @@ func (c ruleCard) rule() (r rules.Rule, empty bool, err error) {
 		if len(c.Methods) == 0 && !hasFilter {
 			return r, true, nil
 		}
-		return r, false, errors.New("bitte einen Endpunkt wählen oder einen eigenen Pfad eintragen.")
+		return r, false, errors.New("bitte einen Endpunkt wählen oder „Eigener Pfad“ wählen und den Pfad eintragen.")
 	}
 	r.Path = path
 	// known methods in a fixed order, unknown ones are kept so the validation rejects them
