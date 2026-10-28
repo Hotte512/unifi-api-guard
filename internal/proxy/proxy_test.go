@@ -184,6 +184,9 @@ func TestAuth(t *testing.T) {
 	if s, _ := e.do("GET", Prefix+"sites/s1/dns/../../x", e.key, ""); s != 400 && s != 403 && s != 404 {
 		t.Errorf("dot segments: %d", s)
 	}
+	if s, _ := e.do("GET", Prefix+"sites/s1/dns/..;/..;/x", e.key, ""); s != 400 {
+		t.Errorf("path parameter traversal: %d", s)
+	}
 	if s, _ := e.do("GET", Prefix+"sites%2Fs1", e.key, ""); s != 400 {
 		t.Errorf("encoded slash: %d", s)
 	}

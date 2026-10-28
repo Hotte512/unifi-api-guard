@@ -3,10 +3,15 @@ package rules
 import "testing"
 
 func TestCleanPath(t *testing.T) {
-	for _, bad := range []string{"", "/", "sites/../x", "sites//x", "sites/./x", "sites/a%2Fb", `sites\x`} {
+	for _, bad := range []string{"", "/", "sites/../x", "sites//x", "sites/./x", "sites/a%2Fb", `sites\x`,
+		"sites/s1/devices/..;/wifi", "sites/s1/devices/.;/x", "sites/s1/devices/..;x/y", "sites/s1;x/devices",
+		"sites/s1/devices/a:b", "sites/s1/dev ices", "sites/s1/d\u00e9vices"} {
 		if _, err := CleanPath(bad); err == nil {
 			t.Errorf("CleanPath(%q) should fail", bad)
 		}
+	}
+	if _, err := CleanPath("sites/0a1b2c3d-4e5f-6789-abcd-ef0123456789/devices/x_y.z~1"); err != nil {
+		t.Errorf("uuid and unreserved characters must be allowed: %v", err)
 	}
 	segs, err := CleanPath("/sites/abc/dns/policies/")
 	if err != nil || len(segs) != 4 {

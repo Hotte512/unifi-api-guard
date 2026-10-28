@@ -77,7 +77,9 @@ func Validate(rs []Rule) error {
 var ErrInvalidPath = errors.New("invalid path")
 
 // CleanPath splits an api path (without query) into segments and rejects empty, "." and ".." segments as well as
-// encoded slashes, so a request can never match a pattern it does not literally fit.
+// any character outside the unreserved set (letters, digits, "-", ".", "_", "~"). Encoded slashes, backslashes and
+// path parameters such as "..;" (which Java servlet stacks resolve as "..") are rejected, so a request can never
+// match a pattern it does not literally fit.
 func CleanPath(p string) ([]string, error) {
 	p = strings.Trim(p, "/")
 	if p == "" {
@@ -85,11 +87,21 @@ func CleanPath(p string) ([]string, error) {
 	}
 	segs := strings.Split(p, "/")
 	for _, s := range segs {
-		if s == "" || s == "." || s == ".." || strings.ContainsAny(s, "%\\") {
+		if s == "" || s == "." || s == ".." || !validSegment(s) {
 			return nil, ErrInvalidPath
 		}
 	}
 	return segs, nil
+}
+
+func validSegment(s string) bool {
+	for i := 0; i < len(s); i++ {
+		c := s[i]
+		if !('a' <= c && c <= 'z' || 'A' <= c && c <= 'Z' || '0' <= c && c <= '9' || strings.IndexByte("-._~", c) >= 0) {
+			return false
+		}
+	}
+	return true
 }
 
 func matchPath(pattern string, segs []string) bool {
