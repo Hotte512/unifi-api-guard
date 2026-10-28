@@ -1,0 +1,27 @@
+{{define "content"}}
+<section class="narrow">
+	<h1>Neuer API-Key</h1>
+	<form method="post" action="/clients">
+		<input type="hidden" name="csrf" value="{{.CSRF}}">
+		<label>Name <input name="name" value="{{.Name}}" placeholder="z. B. NPMplus" required></label>
+		<fieldset>
+			<legend>Vorlage</legend>
+			{{$sel := .Template}}
+			{{range .Templates}}
+			<label class="check"><input type="radio" name="template" value="{{.ID}}" {{if eq .ID $sel}}checked{{end}} required>
+				<span><strong>{{.Name}}</strong><br><span class="muted">{{.Description}}</span></span></label>
+			{{end}}
+		</fieldset>
+		<label>Erlaubte Domains (nur für „Lokale DNS-Einträge“)
+			<textarea name="domains" rows="3" placeholder="*.example.com&#10;example.com">{{.Domains}}</textarea>
+			<span class="hint"><code>*.example.com</code> = alle Subdomains, <code>example.com</code> = nur genau diese Domain.</span>
+		</label>
+		<label>Erlaubte IP-Adressen / Netze
+			<textarea name="allowed_ips" rows="2" required>{{.SuggestedIP}}</textarea>
+			<span class="hint">Eine pro Zeile, z. B. <code>192.168.1.10</code> oder <code>192.168.1.0/24</code>. Vorbelegt mit deiner aktuellen IP – für NPMplus die IP des NPMplus-Hosts eintragen.</span>
+		</label>
+		<label>Anfragen pro Minute (0 = unbegrenzt) <input type="number" name="rate" min="0" value="{{.Rate}}"></label>
+		<button>Key erzeugen</button>
+	</form>
+</section>
+{{end}}

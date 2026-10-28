@@ -1,0 +1,12 @@
+{{define "content"}}
+<section class="narrow">
+	<h1>Einrichtung</h1>
+	<p>Das Einrichtungs-Token steht beim ersten Start im Container-Log (<code>docker logs unifi-api-guard</code>).</p>
+	<form method="post" action="/setup">
+		<label>Einrichtungs-Token <input name="token" required autocomplete="off"></label>
+		<label>Admin-Passwort (mind. 12 Zeichen) <input type="password" name="password" minlength="12" autocomplete="new-password" required></label>
+		<label>Passwort wiederholen <input type="password" name="password2" minlength="12" autocomplete="new-password" required></label>
+		<button>Speichern</button>
+	</form>
+</section>
+{{end}}

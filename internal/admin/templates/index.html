@@ -1,0 +1,66 @@
+{{define "content"}}
+<section>
+	<h2>Gateway</h2>
+	<form method="post" action="/upstream" class="grid">
+		<input type="hidden" name="csrf" value="{{.CSRF}}">
+		<label>Gateway-URL <input name="url" value="{{.Upstream.URL}}" placeholder="https://192.168.1.1" required></label>
+		<label>UniFi-API-Key
+			<input type="password" name="api_key" autocomplete="off" placeholder="{{if .KeySet}}gespeichert – leer lassen zum Behalten{{else}}noch nicht gesetzt{{end}}">
+		</label>
+		<label>Zertifikats-Fingerprint (SHA-256, optional)
+			<input name="pin_sha256" value="{{.Upstream.PinSHA256}}" placeholder="leer = normale Zertifikatsprüfung">
+		</label>
+		<label class="check"><input type="checkbox" name="verify_tls" {{if .Upstream.VerifyTLS}}checked{{end}}> Zertifikat über CA prüfen (ohne Fingerprint)</label>
+		<div class="actions">
+			<button>Speichern</button>
+			<button formaction="/upstream/fingerprint" class="secondary" formnovalidate>Fingerprint abrufen</button>
+			<button formaction="/upstream/test" class="secondary" formnovalidate>Verbindung testen</button>
+		</div>
+	</form>
+	{{if and (not .Upstream.PinSHA256) (not .Upstream.VerifyTLS)}}
+	<p class="hint warn">Das Zertifikat des Gateways wird nicht geprüft. Empfehlung: Fingerprint abrufen, vergleichen und speichern.</p>
+	{{end}}
+</section>
+
+<section>
+	<h2>API-Keys</h2>
+	{{if .Clients}}
+	<table>
+		<thead><tr><th>Name</th><th>Key</th><th>Status</th><th>Erlaubte IPs</th><th>Regeln</th><th>Limit/Min.</th></tr></thead>
+		<tbody>
+		{{range .Clients}}
+		<tr>
+			<td><a href="/clients/{{.ID}}">{{.Name}}</a></td>
+			<td><code>{{.KeyHint}}</code></td>
+			<td>{{if .Enabled}}aktiv{{else}}<span class="muted">gesperrt</span>{{end}}</td>
+			<td>{{if .AllowedIPs}}{{join .AllowedIPs ", "}}{{else}}<span class="warn">keine (gesperrt)</span>{{end}}</td>
+			<td>{{len .Rules}}</td>
+			<td>{{if .RatePerMinute}}{{.RatePerMinute}}{{else}}∞{{end}}</td>
+		</tr>
+		{{end}}
+		</tbody>
+	</table>
+	{{else}}
+	<p>Noch keine Keys. <a href="/clients/new">Ersten Key anlegen</a></p>
+	{{end}}
+</section>
+
+<section>
+	<h2>Letzte Anfragen</h2>
+	{{if .Audit}}
+	<table class="small">
+		<thead><tr><th>Zeit</th><th>Key</th><th>IP</th><th>Anfrage</th><th>Status</th><th>Grund</th></tr></thead>
+		<tbody>
+		{{range .Audit}}
+		<tr class="{{if not .Allowed}}denied{{end}}">
+			<td>{{time .Time}}</td><td>{{.Client}}</td><td>{{.IP}}</td>
+			<td><code>{{.Method}} {{.Path}}</code></td><td>{{.Status}}</td><td>{{.Reason}}</td>
+		</tr>
+		{{end}}
+		</tbody>
+	</table>
+	{{else}}
+	<p class="muted">Noch keine Anfragen seit dem Start.</p>
+	{{end}}
+</section>
+{{end}}

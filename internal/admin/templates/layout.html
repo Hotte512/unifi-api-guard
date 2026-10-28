@@ -1,0 +1,27 @@
+{{define "layout"}}<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UniFi API Guard</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header>
+	<a class="brand" href="/">UniFi API Guard</a>
+	{{if .LoggedIn}}
+	<nav>
+		<a href="/">Übersicht</a>
+		<a href="/clients/new">Neuer Key</a>
+		<a href="/password">Passwort</a>
+		<form method="post" action="/logout" class="inline"><input type="hidden" name="csrf" value="{{.CSRF}}"><button class="link">Abmelden</button></form>
+	</nav>
+	{{end}}
+</header>
+<main>
+	{{if .Error}}<p class="msg error">{{.Error}}</p>{{end}}
+	{{if .Message}}<p class="msg ok">{{.Message}}</p>{{end}}
+	{{template "content" .}}
+</main>
+</body>
+</html>{{end}}

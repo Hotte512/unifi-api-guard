@@ -1,0 +1,9 @@
+{{define "content"}}
+<section class="narrow">
+	<h1>Key für „{{.Client.Name}}“</h1>
+	<p class="msg warn">Der Key wird nur jetzt angezeigt und nicht gespeichert. Bitte sofort kopieren.</p>
+	<pre class="key">{{.Key}}</pre>
+	<p>Im Client als Gateway-URL die Adresse dieses Guards (Proxy-Port, z. B. <code>http://192.168.1.x:8080</code>) und diesen Key als API-Key eintragen.</p>
+	<p><a href="/clients/{{.Client.ID}}">Regeln ansehen</a> · <a href="/">Zur Übersicht</a></p>
+</section>
+{{end}}

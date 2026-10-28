@@ -1,0 +1,17 @@
+services:
+  unifi-api-guard:
+    image: ghcr.io/hotte512/unifi-api-guard:latest
+    container_name: unifi-api-guard
+    restart: unless-stopped
+    ports:
+      - "8080:8080" # Proxy für Anwendungen (NPMplus, Home Assistant, …)
+      - "127.0.0.1:8081:8081" # Admin-Oberfläche, nur lokal bzw. aus dem Admin-Netz freigeben
+    volumes:
+      - ./data:/data
+    environment:
+      TZ: Europe/Berlin
+      # Optional: Schlüssel für die Verschlüsselung des UniFi-Keys getrennt vom Datenverzeichnis ablegen
+      # GUARD_SECRET_FILE: /run/secrets/guard_secret
+      # Optional: HTTPS für beide Ports
+      # GUARD_TLS_CERT: /data/tls/cert.pem
+      # GUARD_TLS_KEY: /data/tls/key.pem
