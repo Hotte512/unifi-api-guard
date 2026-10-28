@@ -20,6 +20,7 @@ Kategorien: Neu / Geändert / Behoben / Sicherheit.
   „Eigener Pfad“ mit `*`/`**`, Methoden per Häkchen, optionaler Filter (Feld + Muster), „Regel entfernen“ und
   „Weitere Regel“.
 - Neues Logo und Favicon, Fußzeile mit Version und Link zu GitHub (bei Release-Versionen direkt zum Release).
+- Englische README (`README.en.md`).
 
 ### Geändert
 
