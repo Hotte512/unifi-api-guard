@@ -6,6 +6,8 @@ UniFi-API-Keys kennen keine Berechtigungsstufen: Wer den Key hat, kann über die
 Firewall, VLANs, WLANs. UniFi API Guard sitzt zwischen deinen Anwendungen und dem Gateway. Er bekommt den echten
 UniFi-Key, jede Anwendung bekommt einen **eigenen Key mit genau den Rechten, die sie braucht**.
 
+**Anleitung:** [docs/anleitung.md](docs/anleitung.md) · **Änderungen:** [CHANGELOG.md](CHANGELOG.md)
+
 ```
 NPMplus ──(Guard-Key: nur DNS-Einträge *.example.com)──┐
 Home Assistant ──(Guard-Key: Geräte/Clients lesen)─────┼──► UniFi API Guard ──(UniFi-Key)──► UniFi-Gateway
@@ -66,6 +68,32 @@ Das Datenverzeichnis muss für den Container-Benutzer (UID 65532) beschreibbar s
 ```bash
 mkdir -p data && sudo chown 65532:65532 data
 ```
+
+## Zusammen mit NPMplus auf einem Host
+
+Läuft der Guard auf demselben Host (oder LXC) wie NPMplus, ist der Host-Modus am einfachsten: Der Proxy lauscht nur
+auf `127.0.0.1`, NPMplus nutzt `http://127.0.0.1:8090` und die erlaubte IP `127.0.0.1`.
+
+```yaml
+services:
+  unifi-api-guard:
+    image: ghcr.io/hotte512/unifi-api-guard:latest
+    container_name: unifi-api-guard
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      GUARD_PROXY_ADDR: 127.0.0.1:8090
+      GUARD_ADMIN_ADDR: :8091
+    volumes:
+      - /opt/unifi-api-guard:/data
+```
+
+```bash
+sudo mkdir -p /opt/unifi-api-guard && sudo chown 65532:65532 /opt/unifi-api-guard
+```
+
+Der [NPMplus-Hotte-Installer](https://github.com/Hotte512/NPMplus) (Branch `claude/hotte-ci`, `install/install.sh`
+bzw. `install/proxmox.sh`) richtet das automatisch ein. Mehr in der [Anleitung](docs/anleitung.md).
 
 ## Einrichtung
 
