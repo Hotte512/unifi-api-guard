@@ -18,8 +18,9 @@ Skript ──(Guard-Key: nur lesen)───────────────
 
 - **Gleiche API wie das Gateway:** Pfade unter `/proxy/network/integration/v1/` und Header `X-API-KEY` bleiben gleich.
   Anwendungen brauchen nur eine andere URL und einen anderen Key.
-- **Regeln pro Key, alles andere ist verboten:** HTTP-Methoden × Pfadmuster, optional mit **Objektfilter**
-  (z. B. nur DNS-Einträge, deren `domain` auf `*.example.com` passt).
+- **Regeln pro Key, alles andere ist verboten:** HTTP-Methoden × Endpunkt, optional mit **Objektfilter**
+  (z. B. nur DNS-Einträge, deren `domain` auf `*.example.com` passt). Die Regeln werden im Formular gebaut:
+  Endpunkt aus einer Liste der UniFi-Network-API oder eigener Pfad, Methoden per Häkchen. JSON bleibt als Expertenmodus.
   - Listen werden gefiltert (fremde Einträge sind unsichtbar, Paging stimmt weiter).
   - Fremde Einzelobjekte liefern `404`.
   - Beim Anlegen/Ändern wird der Body geprüft, beim Ändern/Löschen zusätzlich das bestehende Objekt –
@@ -102,6 +103,7 @@ bzw. `install/proxmox.sh`) richtet das automatisch ein. Mehr in der [Anleitung](
 2. **Gateway eintragen:** URL (z. B. `https://192.168.1.1`) und Key. „Fingerprint abrufen“, mit dem Zertifikat des
    Gateways vergleichen, speichern. „Verbindung testen“.
 3. **Key für eine Anwendung anlegen:** Name, Vorlage, ggf. Domains, erlaubte IPs. Der Key wird nur einmal angezeigt.
+   Mit der Vorlage „Eigene Regeln“ entsteht ein Key ohne Regeln, diese fügt man danach im Formular hinzu.
 
 ### NPMplus
 

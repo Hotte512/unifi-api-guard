@@ -31,6 +31,7 @@ import (
 var assets embed.FS
 
 const (
+	repoURL        = "https://github.com/Hotte512/unifi-api-guard"
 	sessionCookie  = "uag_session"
 	sessionTTL     = 12 * time.Hour
 	maxLoginFails  = 5
@@ -49,7 +50,9 @@ type Server struct {
 	SetupToken string
 	// TokenFile holds the setup token as well and is removed after the setup
 	TokenFile string
-	Log       *slog.Logger
+	// Version is shown in the footer, e.g. "v1.2.0" or "dev"
+	Version string
+	Log     *slog.Logger
 
 	pages map[string]*template.Template
 	mux   *http.ServeMux
@@ -195,10 +198,20 @@ func (s *Server) render(w http.ResponseWriter, r *http.Request, page string, dat
 		data["CSRF"] = sess.csrf
 		data["LoggedIn"] = true
 	}
+	data["Version"] = s.Version
+	data["RepoURL"] = repoURL
+	if isReleaseTag(s.Version) {
+		data["ReleaseURL"] = repoURL + "/releases/tag/" + url.PathEscape(s.Version)
+	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	if err := s.pages[page].ExecuteTemplate(w, "layout", data); err != nil {
 		s.Log.Error("template", "page", page, "error", err)
 	}
+}
+
+// isReleaseTag reports whether v looks like a release tag such as v1.2.0.
+func isReleaseTag(v string) bool {
+	return len(v) > 1 && v[0] == 'v' && v[1] >= '0' && v[1] <= '9'
 }
 
 func (s *Server) newSession(w http.ResponseWriter) {
@@ -448,39 +461,57 @@ func (s *Server) editClientPage(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	s.render(w, r, "client_edit", map[string]any{"Client": c, "Rules": c.Rules})
+	s.render(w, r, "client_edit", editData(c, c.Rules, nil))
 }
 
 func (s *Server) updateClient(w http.ResponseWriter, r *http.Request) {
-	c, ok := s.Store.Client(r.PathValue("id"))
+	stored, ok := s.Store.Client(r.PathValue("id"))
 	if !ok {
 		http.NotFound(w, r)
 		return
 	}
+	c := stored
 	c.Name = r.PostFormValue("name")
 	c.Enabled = r.PostFormValue("enabled") == "on"
 	c.AllowedIPs = splitList(r.PostFormValue("allowed_ips"))
 	c.RatePerMinute, _ = strconv.Atoi(r.PostFormValue("rate"))
-	rawRules := r.PostFormValue("rules")
-	var rs []rules.Rule
-	dec := json.NewDecoder(strings.NewReader(rawRules))
-	dec.DisallowUnknownFields()
-	err := dec.Decode(&rs)
-	if err == nil && rs == nil {
-		rs = []rules.Rule{}
+	mode := r.PostFormValue("rules_mode")
+	if mode == "" {
+		mode = "form"
+	}
+	var (
+		rs    []rules.Rule
+		cards []ruleCard
+		err   error
+	)
+	switch mode {
+	case "form":
+		cards, rs, err = parseRuleForm(r.PostForm)
+	case "json":
+		rs, err = decodeJSONRules(r.PostFormValue("rules"))
+	default:
+		err = errors.New("Unbekannte Bearbeitungsart der Regeln.")
 	}
 	if err == nil {
 		c.Rules = rs
 		err = s.Store.UpdateClient(c)
 	}
 	if err != nil {
-		s.render(w, r, "client_edit", map[string]any{"Client": c, "Rules": rawRules, "RawRules": true,
-			"Error": err.Error()})
+		// show the form again with the submitted input, the other editor shows the stored rules
+		data := editData(c, stored.Rules, cards)
+		if mode == "json" {
+			data["RulesJSON"] = r.PostFormValue("rules")
+			data["RulesMode"] = "json"
+		}
+		data["Error"] = err.Error()
+		s.render(w, r, "client_edit", data)
 		return
 	}
 	s.Log.Info("client changed", "client", c.Name, "id", c.ID)
 	c, _ = s.Store.Client(c.ID)
-	s.render(w, r, "client_edit", map[string]any{"Client": c, "Rules": c.Rules, "Message": "Gespeichert."})
+	data := editData(c, c.Rules, nil)
+	data["Message"] = "Gespeichert."
+	s.render(w, r, "client_edit", data)
 }
 
 func (s *Server) deleteClient(w http.ResponseWriter, r *http.Request) {

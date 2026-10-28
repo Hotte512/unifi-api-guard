@@ -4,11 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>UniFi API Guard</title>
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
 <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 <header>
-	<a class="brand" href="/">UniFi API Guard</a>
+	<a class="brand" href="/"><img src="/static/logo.svg" alt="" width="28" height="28">UniFi API Guard</a>
 	{{if .LoggedIn}}
 	<nav>
 		<a href="/">Übersicht</a>
@@ -23,5 +25,9 @@
 	{{if .Message}}<p class="msg ok">{{.Message}}</p>{{end}}
 	{{template "content" .}}
 </main>
+<footer>
+	UniFi API Guard {{if .ReleaseURL}}<a href="{{.ReleaseURL}}">{{.Version}}</a>{{else}}{{.Version}}{{end}}
+	· <a href="{{.RepoURL}}">GitHub</a>
+</footer>
 </body>
 </html>{{end}}
