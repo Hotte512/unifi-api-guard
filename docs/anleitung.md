@@ -145,7 +145,7 @@ Jede Regel hat diese Felder:
 | Feld | Bedeutung |
 | --- | --- |
 | Endpunkt | Auswahl aus der Liste der UniFi-Network-API, gruppiert (Geräte, Clients, Netzwerke, WLAN, DNS, Firewall, …), oder „Eigener Pfad“ |
-| Eigener Pfad | nur bei „Eigener Pfad“, relativ zu `/proxy/network/integration/v1/`; `*` = genau ein Segment, `**` am Ende = beliebig viele, z. B. `sites/*/dns/policies` |
+| Eigener Pfad | nur bei „Eigener Pfad“, relativ zu `/proxy/network/integration/v1/`; `*` = genau ein Segment, `**` am Ende = beliebig viele, z. B. `sites/*/dns/policies`. Anfragen mit anderen Zeichen als Buchstaben, Ziffern und `-._~` in einem Segment lehnt der Guard immer mit `400` ab |
 | Erlaubte Methoden | Häkchen bei lesen (GET), anlegen (POST), ersetzen (PUT), ändern (PATCH), löschen (DELETE); nicht unterstützte Methoden des Endpunkts sind ausgegraut |
 | Filter-Feld (optional) | Feld des Objekts, das geprüft wird, z. B. `domain` |
 | Muster | eins pro Zeile; `example.com` = genau diese Domain, `*.example.com` = alle Subdomains (nicht `example.com` selbst), `*` = alles |
@@ -210,6 +210,9 @@ Zuerst in der Übersicht unter „Letzte Anfragen“ nachsehen: dort stehen Key,
 | `404` bei einem Objekt | Objekt liegt außerhalb des Filters (für diesen Key unsichtbar) | Filtermuster prüfen |
 | `502` `upstream ...` | Gateway nicht erreichbar oder nicht konfiguriert | URL, UniFi-Key und Fingerprint prüfen, „Verbindung testen“ |
 | Admin-Oberfläche: `403 forbidden` | Zugriff aus einem Netz außerhalb von `GUARD_ADMIN_ALLOW` | Netz in `GUARD_ADMIN_ALLOW` aufnehmen |
+
+Wer vermutet, dass jemand eine Sitzung übernommen hat, ändert unter „Passwort“ das Admin-Passwort. Das meldet alle
+anderen Sitzungen ab.
 
 ### Admin-Passwort vergessen
 

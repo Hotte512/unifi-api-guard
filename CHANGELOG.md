@@ -39,3 +39,12 @@ Kategorien: Neu / Geändert / Behoben / Sicherheit.
 
 - Ist das Datenverzeichnis nicht beschreibbar (falscher Besitzer), nennt die Fehlermeldung jetzt den nötigen
   `chown`-Befehl statt nur „permission denied“.
+
+### Sicherheit
+
+- Pfadprüfung strenger: Pfadsegmente dürfen nur Buchstaben, Ziffern und `-._~` enthalten. Pfade wie
+  `devices/..;/wifi`, die das Gateway als `..` auflösen könnte, konnten vorher eine `*`/`**`-Regel verlassen und
+  werden jetzt mit `400` abgelehnt.
+- Login-Sperre: Parallele Anmeldeversuche werden jetzt einzeln gezählt; vorher ließen sich durch gleichzeitige
+  Anfragen weit mehr als 5 Passwörter pro Sperrzeit ausprobieren.
+- Nach einer Passwortänderung werden alle anderen Sitzungen abgemeldet.

@@ -240,19 +240,24 @@ func (s *Server) loginPage(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) login(w http.ResponseWriter, r *http.Request) {
 	ip := proxy.ClientIP(r, s.TrustedProxies).String()
+	// check and count the attempt in one step before the slow password check, so parallel requests cannot all
+	// pass with the same counter
 	s.mu.Lock()
 	f := s.fails[ip]
-	s.mu.Unlock()
-	if f.count >= maxLoginFails && time.Now().Before(f.until) {
+	now := time.Now()
+	if f.count >= maxLoginFails && now.Before(f.until) {
+		s.mu.Unlock()
 		s.render(w, r, "login", map[string]any{"Error": "Zu viele Fehlversuche, bitte später erneut versuchen."})
 		return
 	}
+	if !now.Before(f.until) {
+		f.count = 0
+	}
+	f.count++
+	f.until = now.Add(loginBlockTime)
+	s.fails[ip] = f
+	s.mu.Unlock()
 	if !s.Store.CheckPassword(r.PostFormValue("password")) {
-		s.mu.Lock()
-		f.count++
-		f.until = time.Now().Add(loginBlockTime)
-		s.fails[ip] = f
-		s.mu.Unlock()
 		s.Log.Warn("admin login failed", "ip", ip)
 		s.render(w, r, "login", map[string]any{"Error": "Falsches Passwort."})
 		return
@@ -309,6 +314,10 @@ func (s *Server) setup(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) passwordPage(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Query().Get("changed") == "1" {
+		s.render(w, r, "password", map[string]any{"Message": "Passwort geändert, andere Sitzungen wurden abgemeldet."})
+		return
+	}
 	s.render(w, r, "password", nil)
 }
 
@@ -325,7 +334,12 @@ func (s *Server) changePassword(w http.ResponseWriter, r *http.Request) {
 		s.render(w, r, "password", map[string]any{"Error": err.Error()})
 		return
 	}
-	s.render(w, r, "password", map[string]any{"Message": "Passwort geändert."})
+	// end all sessions, a stolen session cookie must not survive the password change
+	s.mu.Lock()
+	clear(s.sessions)
+	s.mu.Unlock()
+	s.newSession(w)
+	http.Redirect(w, r, "/password?changed=1", http.StatusSeeOther)
 }
 
 // --- dashboard / upstream ---
