@@ -156,6 +156,10 @@ Filter patterns: `example.com` = exactly this domain, `*.example.com` = all subd
 | `GUARD_SECRET_FILE` | `$GUARD_DATA_DIR/secret.key` | Key used to encrypt the UniFi key (64 hex characters, generated otherwise) |
 | `GUARD_TLS_CERT`, `GUARD_TLS_KEY` | empty | HTTPS for both ports |
 | `GUARD_COOKIE_SECURE` | `false` | `true` if the admin UI runs behind an HTTPS reverse proxy |
+| `GUARD_ADMIN_URL` | empty | Public address of the admin UI (e.g. behind a reverse proxy), reported via `/guard/v1/info` |
+
+The proxy port answers `GET /guard/v1/info` without a key with product, version and admin UI address (no secrets).
+NPMplus · Hotte uses it to link to the guard admin UI from its settings.
 
 ## Security notes
 

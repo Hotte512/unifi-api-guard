@@ -8,6 +8,9 @@ Kategorien: Neu / Geändert / Behoben / Sicherheit.
 
 ### Neu
 
+- Info-Endpunkt `GET /guard/v1/info` auf dem Proxy-Port (Produkt, Version, Adresse der Admin-Oberfläche, ohne Key);
+  NPMplus · Hotte verlinkt damit aus seinen Einstellungen zur Guard-Verwaltung. Neue Variable `GUARD_ADMIN_URL`.
+- Images aus `main` tragen jetzt eine eindeutige Version (`main-<Commit>`), die im Footer erscheint.
 - Erste Version: Rechte-Proxy für die UniFi Network Integration API mit eigenem Key pro Anwendung.
 - Gleiche API wie das Gateway (Pfade und Header `X-API-KEY`), Anwendungen brauchen nur eine andere URL und einen anderen Key.
 - Regeln pro Key (Methoden × Pfadmuster) mit Objektfilter, z. B. nur DNS-Einträge für `*.example.com`; fremde Einträge sind unsichtbar oder liefern `404`.

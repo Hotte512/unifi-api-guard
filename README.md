@@ -153,6 +153,10 @@ Filtermuster: `example.com` = genau diese Domain, `*.example.com` = alle Subdoma
 | `GUARD_SECRET_FILE` | `$GUARD_DATA_DIR/secret.key` | Schlüssel für die Verschlüsselung des UniFi-Keys (64 Hex-Zeichen, wird sonst erzeugt) |
 | `GUARD_TLS_CERT`, `GUARD_TLS_KEY` | leer | HTTPS für beide Ports |
 | `GUARD_COOKIE_SECURE` | `false` | `true`, wenn die Admin-Oberfläche hinter einem HTTPS-Reverse-Proxy läuft |
+| `GUARD_ADMIN_URL` | leer | Öffentliche Adresse der Admin-Oberfläche (z. B. hinter einem Reverse-Proxy), wird über `/guard/v1/info` gemeldet |
+
+Der Proxy-Port beantwortet `GET /guard/v1/info` ohne Key mit Produkt, Version und Adresse der Admin-Oberfläche
+(keine Geheimnisse). NPMplus · Hotte zeigt damit in den Einstellungen einen Link zur Guard-Verwaltung.
 
 ## Sicherheitshinweise
 

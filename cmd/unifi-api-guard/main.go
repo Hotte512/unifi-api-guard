@@ -4,16 +4,20 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
 	"io/fs"
 	"log/slog"
+	"net"
 	"net/http"
 	"net/netip"
+	"net/url"
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -103,9 +107,20 @@ func run(log *slog.Logger) error {
 	ph := &proxy.Handler{Store: st, Audit: audit, TrustedProxies: trusted, Log: log.With("part", "proxy")}
 	proxyMux := http.NewServeMux()
 	proxyMux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) { w.Write([]byte("ok")) })
-	proxyMux.Handle("/", ph)
 
 	certFile, keyFile := os.Getenv("GUARD_TLS_CERT"), os.Getenv("GUARD_TLS_KEY")
+	info, err := guardInfo(env("GUARD_ADMIN_ADDR", ":8081"), certFile != "", env("GUARD_ADMIN_URL", ""))
+	if err != nil {
+		return err
+	}
+	// lets clients like NPMplus link to the admin ui; no secrets, the same for everyone
+	proxyMux.HandleFunc("GET /guard/v1/info", func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Cache-Control", "no-store")
+		w.Write(info)
+	})
+	proxyMux.Handle("/", ph)
+
 	as := &admin.Server{Store: st, Proxy: ph, Audit: audit, Allowed: adminAllow, TrustedProxies: trusted,
 		SecureCookie: certFile != "" || env("GUARD_COOKIE_SECURE", "") == "true", Version: version,
 		Log: log.With("part", "admin")}
@@ -160,6 +175,32 @@ func run(log *slog.Logger) error {
 		s.Shutdown(shutdown)
 	}
 	return nil
+}
+
+// guardInfo builds the response of /guard/v1/info
+func guardInfo(adminAddr string, tls bool, adminURL string) ([]byte, error) {
+	_, portStr, err := net.SplitHostPort(adminAddr)
+	if err != nil {
+		return nil, fmt.Errorf("GUARD_ADMIN_ADDR: %w", err)
+	}
+	port, err := strconv.Atoi(portStr)
+	if err != nil {
+		return nil, fmt.Errorf("GUARD_ADMIN_ADDR: invalid port %q", portStr)
+	}
+	if adminURL != "" {
+		u, err := url.Parse(adminURL)
+		if err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" {
+			return nil, fmt.Errorf("GUARD_ADMIN_URL must be an http(s) url, got %q", adminURL)
+		}
+	}
+	scheme := "http"
+	if tls {
+		scheme = "https"
+	}
+	return json.Marshal(map[string]any{
+		"product": "unifi-api-guard", "version": version,
+		"admin_port": port, "admin_scheme": scheme, "admin_url": adminURL,
+	})
 }
 
 func newServer(addr string, h http.Handler) *http.Server {
