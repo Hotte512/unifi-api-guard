@@ -1,3 +1,5 @@
+🇩🇪 Deutsch · [🇬🇧 English](README.en.md)
+
 # UniFi API Guard
 
 Ein kleiner Rechte-Proxy für die **UniFi Network Integration API** (UniFi Network 9.4+).
