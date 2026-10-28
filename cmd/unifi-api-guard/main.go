@@ -107,7 +107,8 @@ func run(log *slog.Logger) error {
 
 	certFile, keyFile := os.Getenv("GUARD_TLS_CERT"), os.Getenv("GUARD_TLS_KEY")
 	as := &admin.Server{Store: st, Proxy: ph, Audit: audit, Allowed: adminAllow, TrustedProxies: trusted,
-		SecureCookie: certFile != "" || env("GUARD_COOKIE_SECURE", "") == "true", Log: log.With("part", "admin")}
+		SecureCookie: certFile != "" || env("GUARD_COOKIE_SECURE", "") == "true", Version: version,
+		Log: log.With("part", "admin")}
 	// the token only allows to set the first password and is useless afterwards; it is also kept in a file, so it
 	// can still be found when the log is gone
 	as.TokenFile = filepath.Join(dataDir, "setup-token")

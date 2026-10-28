@@ -16,12 +16,19 @@ Kategorien: Neu / Geändert / Behoben / Sicherheit.
 - Admin-Oberfläche mit Einrichtungs-Token, Gateway-Einstellungen (Fingerprint-Pinning, Verbindungstest), Key-Verwaltung und Protokoll der letzten Anfragen.
 - Sichere Speicherung: Guard-Keys nur als Hash, UniFi-Key verschlüsselt, Keys und Request-Bodies werden nie geloggt.
 - Anleitung für die Einrichtung, auch zusammen mit NPMplus auf einem Host: `docs/anleitung.md`.
+- Regeln werden im Formular bearbeitet: Endpunkt aus einer Liste der UniFi-Network-API (Version 10.1.84) oder
+  „Eigener Pfad“ mit `*`/`**`, Methoden per Häkchen, optionaler Filter (Feld + Muster), „Regel entfernen“ und
+  „Weitere Regel“.
+- Neues Logo und Favicon, Fußzeile mit Version und Link zu GitHub (bei Release-Versionen direkt zum Release).
 
 ### Geändert
 
 - README: Haftungsausschluss und Hinweis auf die Entwicklung mit KI-Unterstützung.
 - Das Einrichtungs-Token steht zusätzlich in der Datei `setup-token` im Datenverzeichnis und wird nach der
   Einrichtung gelöscht – es geht also nicht mehr verloren, wenn das Container-Log weg ist.
+- Das JSON der Regeln ist als Expertenmodus unter „JSON bearbeiten (Experten)“ verfügbar; beim Speichern wählt man,
+  ob Formular oder JSON gilt.
+- Nach dem Anlegen eines Keys ohne Regeln weist die Seite darauf hin und führt direkt zum Regel-Formular.
 - CI prüft mit dem neuesten Go-1.26-Patch-Release und nutzt neuere GitHub-Actions-Versionen.
 
 ### Behoben

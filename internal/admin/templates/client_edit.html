@@ -10,17 +10,78 @@
 			<span class="hint">Leer = Key ist gesperrt.</span>
 		</label>
 		<label>Anfragen pro Minute (0 = unbegrenzt) <input type="number" name="rate" min="0" value="{{.Client.RatePerMinute}}"></label>
-		<label>Regeln (JSON)
-			<textarea name="rules" rows="18" class="code" spellcheck="false">{{if .RawRules}}{{.Rules}}{{else}}{{json .Rules}}{{end}}</textarea>
-		</label>
+
+		<h2>Regeln</h2>
+		<p class="hint">Alles ist verboten, was keine Regel erlaubt. Leere Regeln werden ignoriert.</p>
+		<input type="hidden" name="rule_count" value="{{.RuleCount}}">
+		<datalist id="filter-fields">{{range .FilterFields}}<option value="{{.}}"></option>{{end}}</datalist>
+		<div class="rules" data-rule-list data-max="{{.MaxRules}}">
+		{{range $c := .Cards}}
+			<fieldset class="rule" data-rule>
+				<legend class="rule-title">Regel {{$c.Num}}</legend>
+				<label>Endpunkt
+					<select name="rule.{{$c.N}}.endpoint" class="rule-endpoint">
+						<option value="">– bitte wählen –</option>
+						{{range $.Groups}}
+						<optgroup label="{{.Name}}">
+							{{range .Endpoints}}<option value="{{.Path}}" data-methods="{{join .Methods " "}}"{{if eq .Path $c.Endpoint}} selected{{end}}>{{.Name}} – {{.Path}}</option>{{end}}
+						</optgroup>
+						{{end}}
+						<option value="{{$.CustomEndpoint}}"{{if eq $c.Endpoint $.CustomEndpoint}} selected{{end}}>Eigener Pfad</option>
+					</select>
+				</label>
+				<label class="rule-path">Eigener Pfad
+					<input name="rule.{{$c.N}}.path" value="{{$c.Path}}" placeholder="sites/*/dns/policies" spellcheck="false" autocomplete="off">
+					<span class="hint">Nur bei „Eigener Pfad“. Relativ zu <code>/proxy/network/integration/v1/</code>,
+					<code>*</code> = ein Segment, <code>**</code> am Ende = beliebig viele.</span>
+				</label>
+				<fieldset class="methods">
+					<legend>Erlaubte Methoden</legend>
+					{{range $.Methods}}
+					<label class="check"><input type="checkbox" class="rule-method" name="rule.{{$c.N}}.methods" value="{{.Value}}"{{if $c.HasMethod .Value}} checked{{end}}> {{.Label}}</label>
+					{{end}}
+				</fieldset>
+				<div class="grid">
+					<label>Filter-Feld (optional)
+						<input name="rule.{{$c.N}}.filter_field" value="{{$c.FilterField}}" list="filter-fields" placeholder="z. B. domain" spellcheck="false" autocomplete="off">
+						<span class="hint">Nur Objekte, deren Feld zu einem Muster passt.</span>
+					</label>
+					<label>Muster (eins pro Zeile)
+						<textarea name="rule.{{$c.N}}.patterns" rows="2" spellcheck="false" placeholder="*.example.com&#10;example.com">{{$c.Patterns}}</textarea>
+						<span class="hint"><code>*.example.com</code> = alle Subdomains, <code>example.com</code> = nur genau diese, <code>*</code> = alles.</span>
+					</label>
+				</div>
+				<label class="check rule-remove"><input type="checkbox" class="rule-delete" name="rule.{{$c.N}}.delete"{{if $c.Delete}} checked{{end}}> Regel entfernen</label>
+			</fieldset>
+		{{end}}
+		</div>
+		<div class="actions">
+			<button type="button" class="secondary" data-add-rule hidden>Weitere Regel</button>
+		</div>
+		<p class="hint">Ohne JavaScript: für mehr Regeln speichern, danach erscheinen wieder zwei leere Regeln.</p>
+
+		<details class="expert"{{if eq .RulesMode "json"}} open{{end}}>
+			<summary>JSON bearbeiten (Experten)</summary>
+			<fieldset>
+				<legend>Beim Speichern verwenden</legend>
+				<label class="check"><input type="radio" name="rules_mode" value="form"{{if ne .RulesMode "json"}} checked{{end}}> Formular oben</label>
+				<label class="check"><input type="radio" name="rules_mode" value="json"{{if eq .RulesMode "json"}} checked{{end}}> JSON unten (ersetzt alle Regeln)</label>
+			</fieldset>
+			<label>Regeln (JSON)
+				<textarea name="rules" rows="18" class="code" spellcheck="false">{{.RulesJSON}}</textarea>
+			</label>
+		</details>
+
 		<details class="hint">
 			<summary>Aufbau der Regeln</summary>
-			<p>Alles ist verboten, was keine Regel erlaubt. Jede Regel erlaubt <code>methods</code> (GET, POST, PUT, PATCH, DELETE) auf einem
-			<code>path</code> relativ zu <code>/proxy/network/integration/v1/</code>. <code>*</code> steht für genau ein Pfadsegment,
-			<code>**</code> am Ende für beliebig viele.</p>
-			<p>Optional schränkt <code>filter</code> die Objekte ein: <code>{"field": "domain", "patterns": ["*.example.com"]}</code>.
+			<p>Jede Regel erlaubt die angehakten Methoden auf einem Endpunkt der UniFi Network API. Die Liste enthält die
+			bekannten Endpunkte; mit „Eigener Pfad“ lässt sich jeder Pfad relativ zu <code>/proxy/network/integration/v1/</code>
+			eintragen. <code>*</code> steht für genau ein Pfadsegment, <code>**</code> am Ende für beliebig viele.</p>
+			<p>Optional schränkt ein Filter die Objekte ein, z. B. Feld <code>domain</code> mit Muster <code>*.example.com</code>.
 			Listen werden gefiltert, Einzelobjekte anderer Domains liefern 404, beim Anlegen/Ändern wird der Body geprüft,
 			beim Ändern/Löschen zusätzlich das bestehende Objekt.</p>
+			<p>Im JSON-Modus hat jede Regel <code>methods</code>, <code>path</code> und optional
+			<code>filter</code>: <code>{"field": "domain", "patterns": ["*.example.com"]}</code>.</p>
 		</details>
 		<div class="actions">
 			<button>Speichern</button>
@@ -32,4 +93,5 @@
 		<span class="hint">Der Key funktioniert danach sofort nicht mehr.</span>
 	</form>
 </section>
+<script src="/static/rules.js" defer></script>
 {{end}}

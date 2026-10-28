@@ -106,6 +106,9 @@ Installer, der genau dieses Setup automatisch einrichtet: `install/install.sh` (
 
 Mit „Key erzeugen“ wird der Key **nur einmal** angezeigt. Sofort kopieren, er wird nicht gespeichert.
 
+Bei der Vorlage **„Eigene Regeln“** hat der Key noch keine Regeln und darf deshalb nichts. Die Regeln legt man im
+Anschluss unter „Regeln ansehen und bearbeiten“ an (Abschnitt 6).
+
 ## 5. Anwendungen verbinden
 
 ### NPMplus
@@ -134,7 +137,44 @@ Die API ist identisch zum Gateway, nur URL und Key unterscheiden sich.
 
 ## 6. Regeln bearbeiten
 
-Unter *Übersicht › Name des Keys* stehen die Regeln als JSON. Alles, was keine Regel erlaubt, ist verboten.
+Unter *Übersicht › Name des Keys* stehen die Regeln. Alles, was keine Regel erlaubt, ist verboten. Leere Regeln
+werden ignoriert.
+
+Jede Regel hat diese Felder:
+
+| Feld | Bedeutung |
+| --- | --- |
+| Endpunkt | Auswahl aus der Liste der UniFi-Network-API, gruppiert (Geräte, Clients, Netzwerke, WLAN, DNS, Firewall, …), oder „Eigener Pfad“ |
+| Eigener Pfad | nur bei „Eigener Pfad“, relativ zu `/proxy/network/integration/v1/`; `*` = genau ein Segment, `**` am Ende = beliebig viele, z. B. `sites/*/dns/policies` |
+| Erlaubte Methoden | Häkchen bei lesen (GET), anlegen (POST), ersetzen (PUT), ändern (PATCH), löschen (DELETE); nicht unterstützte Methoden des Endpunkts sind ausgegraut |
+| Filter-Feld (optional) | Feld des Objekts, das geprüft wird, z. B. `domain` |
+| Muster | eins pro Zeile; `example.com` = genau diese Domain, `*.example.com` = alle Subdomains (nicht `example.com` selbst), `*` = alles |
+
+„Regel entfernen“ löscht die Regel beim Speichern. „Weitere Regel“ fügt eine leere Regel hinzu. Ohne JavaScript
+werden immer zwei leere Regeln angezeigt; für mehr Regeln speichert man und bearbeitet danach erneut.
+
+Beispiel: Sites lesen, DNS-Einträge nur für `*.example.com` lesen, anlegen, ändern und löschen.
+
+| Endpunkt | Methoden | Filter |
+| --- | --- | --- |
+| Sites (Liste) | lesen | – |
+| DNS-Policies (Liste / anlegen) | lesen, anlegen | Feld `domain`, Muster `*.example.com` |
+| DNS-Policy (einzeln) | lesen, ersetzen, löschen | Feld `domain`, Muster `*.example.com` |
+
+### Filter gelten nur für Objekte mit dem Feld
+
+Ein Filter prüft das Feld im Objekt. Fehlt das Feld im Body oder im bestehenden Objekt, wird die Anfrage abgelehnt.
+Beispiel: Ein PATCH auf Firewall-Policies enthält nur `loggingEnabled`, kein `name`. Mit einem Filter auf `name`
+wird dieser PATCH daher abgelehnt, ohne Filter ist er erlaubt.
+
+Auch die Reihenfolge-Endpunkte (`sites/*/firewall/policies/ordering`, `sites/*/acl-rules/ordering`) passen auf das
+Muster `…/*`. Eine Regel mit Filter auf `…/policies/*` lehnt die Reihenfolge deshalb ab. Wer die Reihenfolge ändern
+will, braucht dafür eine eigene Regel ohne Filter.
+
+### Expertenmodus: JSON
+
+Unter „JSON bearbeiten (Experten)“ stehen die Regeln als JSON. Mit dem Schalter darunter wird beim Speichern
+festgelegt, ob das Formular oder das JSON gilt; „JSON“ ersetzt alle Regeln.
 
 ```json
 [
@@ -149,12 +189,11 @@ Unter *Übersicht › Name des Keys* stehen die Regeln als JSON. Alles, was kein
 | Feld | Bedeutung |
 | --- | --- |
 | `methods` | erlaubte HTTP-Methoden (GET, POST, PUT, PATCH, DELETE) |
-| `path` | Pfad relativ zu `/proxy/network/integration/v1/`; `*` = genau ein Segment, `**` am Ende = beliebig viele |
+| `path` | Pfad relativ zu `/proxy/network/integration/v1/` |
 | `filter.field` | Feld des Objekts, das geprüft wird (hier `domain`) |
-| `filter.patterns` | erlaubte Werte; `example.com` = genau diese, `*.example.com` = Subdomains, `*` = alles |
+| `filter.patterns` | erlaubte Werte, Schreibweise wie oben |
 
-Im Beispiel: Sites lesen, DNS-Einträge nur für `*.example.com` lesen, anlegen, ändern und löschen. Listen zeigen
-nur passende Einträge, fremde Einzelobjekte liefern `404`, beim Anlegen/Ändern wird der Body geprüft.
+Listen zeigen nur passende Einträge, fremde Einzelobjekte liefern `404`, beim Anlegen/Ändern wird der Body geprüft.
 
 ## 7. Fehlersuche
 
@@ -167,7 +206,7 @@ Zuerst in der Übersicht unter „Letzte Anfragen“ nachsehen: dort stehen Key,
 | `401` `invalid api key` | Key falsch, gelöscht oder Leerzeichen kopiert | Key prüfen, sonst neuen anlegen |
 | `403` `ip address not allowed for this api key` | Quell-IP steht nicht in den erlaubten IPs | Echte IP unter „Letzte Anfragen“ ablesen und eintragen, bei Docker-Bridge z. B. `172.17.0.1` |
 | `403` `not allowed for this api key` | Keine Regel erlaubt Methode und Pfad | Regel ergänzen (Abschnitt 6) |
-| `403` `domain not allowed for this api key` | Body passt nicht zum Objektfilter | Domain in den Mustern ergänzen |
+| `403` `domain not allowed for this api key` | Body passt nicht zum Objektfilter oder enthält das Filterfeld nicht | Domain in den Mustern ergänzen, sonst Filter entfernen oder eigene Regel ohne Filter anlegen (Abschnitt 6) |
 | `404` bei einem Objekt | Objekt liegt außerhalb des Filters (für diesen Key unsichtbar) | Filtermuster prüfen |
 | `502` `upstream ...` | Gateway nicht erreichbar oder nicht konfiguriert | URL, UniFi-Key und Fingerprint prüfen, „Verbindung testen“ |
 | Admin-Oberfläche: `403 forbidden` | Zugriff aus einem Netz außerhalb von `GUARD_ADMIN_ALLOW` | Netz in `GUARD_ADMIN_ALLOW` aufnehmen |
