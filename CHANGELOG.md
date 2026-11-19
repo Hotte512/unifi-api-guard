@@ -4,6 +4,17 @@ Alle Änderungen an UniFi API Guard. Format angelehnt an Keep a Changelog, Eintr
 
 Kategorien: Neu / Geändert / Behoben / Sicherheit.
 
+## 2026-11-19
+
+### Sicherheit
+
+- Neu gebaut mit Go 1.26.11, enthält dessen Sicherheitskorrekturen (u. a. `net/http`). Release `v1.2.1`.
+
+### Geändert
+
+- Das Image `latest` wird jede Woche neu gebaut (und lässt sich manuell anstoßen), damit Sicherheitsupdates von Go
+  und vom Basis-Image ohne Code-Änderung ankommen.
+
 ## 2026-10-28
 
 ### Neu

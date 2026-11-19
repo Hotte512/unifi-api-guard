@@ -230,5 +230,8 @@ Update:
 docker compose pull && docker compose up -d
 ```
 
+Das Image `latest` wird jeden Montag neu gebaut, auch ohne Code-Änderung. So kommen Sicherheitsupdates von Go und
+vom Basis-Image hinein. Ein regelmäßiges Update (oder z. B. Watchtower) hält den Guard damit aktuell.
+
 Backup: `config.json` und `secret.key` aus dem Datenverzeichnis gehören zusammen. Ohne `secret.key` lässt sich der
 gespeicherte UniFi-Key nicht mehr entschlüsseln. Beide Dateien enthalten Geheimnisse, also sicher aufbewahren.

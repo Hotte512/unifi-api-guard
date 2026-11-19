@@ -5,6 +5,10 @@ on:
     branches: [main]
     tags: ["v*"]
   pull_request:
+  # weekly rebuild of main, picks up go security releases and an updated base image
+  schedule:
+    - cron: "23 3 * * 1"
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -26,7 +30,7 @@ jobs:
 
   image:
     needs: test
-    if: github.event_name == 'push'
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -61,3 +65,6 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: VERSION=${{ steps.ver.outputs.version }}
+          # always fetch the current golang and distroless images
+          pull: true
+          no-cache: ${{ github.event_name != 'push' }}
